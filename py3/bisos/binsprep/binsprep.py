@@ -81,7 +81,6 @@ from bisos.common import csParam
 import collections
 # ####+END:
 
-
 ####+BEGIN: bx:cs:py3:section :title "Public Classes"
 """ #+begin_org
 *  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  /Section/    [[elisp:(outline-show-subtree+toggle)][||]] *Public Classes*  [[elisp:(org-cycle)][| ]]
@@ -99,18 +98,38 @@ class AptPkg(object):
 """
     def __init__(
             self,
-            aptPkgName: str | None =None,
+            name: str | None =None,
+            func: typing.Callable | None =None,
+            osVers: list[str] | None =None,
     ):
-        self._aptPkgName = aptPkgName
-
+        self._aptPkgName = name
+        self._aptPkgFunc = func
+        self._osVers = osVers
 
     @property
-    def aptPkgName(self) -> str | None:
+    def name(self) -> str | None:
         return self._aptPkgName
 
-    @aptPkgName.setter
-    def aptPkgName(self, value: str | None,):
+    @name.setter
+    def name(self, value: str | None,):
         self._aptPkgName = value
+
+    @property
+    def func(self) -> typing.Callable | None:
+        return self._aptPkgFunc
+
+    @func.setter
+    def func(self, value: typing.Callable | None,):
+        self._aptPkgFunc = value
+
+    @property
+    def osVers(self) -> list[str] | None:
+        return self._osVers
+
+    @osVers.setter
+    def osVers(self, value: list[str] | None,):
+        self._osVers = value
+
 
 ####+BEGIN: b:py3:class/decl :className "BinsPrepPkgsSingleton" :superClass "object" :comment "Abstraction of a  Interface" :classType "basic"
 """ #+begin_org
@@ -123,9 +142,10 @@ class BinsPrepPkgsSingleton(object):
 """
     _instance = None
 
+    # Singleton using New
     def __new__(cls):
         if cls._instance is None:
-            print('Creating the object')
+            # print('Creating the object')
             cls._instance = super(BinsPrepPkgsSingleton, cls).__new__(cls)
             # Put any initialization here.
         return cls._instance
@@ -144,6 +164,31 @@ class BinsPrepPkgsSingleton(object):
     def aptPkgsList(self, value: list[AptPkg],):
         self._aptPkgsList = value
 
+    def aptPkgsNames(self,) -> list[str]:
+        result: list[str] = []
+        if self.aptPkgsList is None:
+            return result
+        for eachPkg in self.aptPkgsList:
+            if eachPkg.name is None:
+                continue
+            result.append(eachPkg.name)
+        return result
+
+    def namedAptPkg(self, name: str) -> AptPkg | None:
+        result: AptPkg | None = None
+        if self.aptPkgsList is None:
+            return result
+        for eachPkg in self.aptPkgsList:
+            if eachPkg.name is None:
+                continue
+            elif eachPkg.name == name:
+                result = eachPkg
+            else:
+                continue
+
+        return result
+
+
 binsPrepPkgsSingleton = BinsPrepPkgsSingleton()
 
 ####+BEGIN: bx:cs:py3:section :title "Public Functions"
@@ -160,12 +205,14 @@ binsPrepPkgsSingleton = BinsPrepPkgsSingleton()
 def aptPkg(
 ####+END:
         pkgName: str,
+        func: typing.Callable | None = None,
+        osVers: list[str] | None = None,
 ) -> AptPkg:
     """ #+begin_org
 ** [[elisp:(org-cycle)][| *DocStr | ]
     #+end_org """
 
-    pkg = AptPkg(aptPkgName=pkgName)
+    pkg = AptPkg(name=pkgName, func=func, osVers=osVers)
 
     return pkg
 

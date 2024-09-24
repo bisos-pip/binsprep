@@ -81,6 +81,8 @@ from bisos.common import csParam
 import collections
 ####+END:
 
+# import os
+# import sys
 from bisos.binsprep import binsprep
 
 ####+BEGIN: b:py3:cs:orgItem/section :title "CSU-Lib Examples" :comment "-- Providing examples_csu"
@@ -106,9 +108,17 @@ def examples_csu(
     cmnd = cs.examples.cmndEnter
     literal = cs.examples.execInsert
 
-    cs.examples.menuChapter('=BinsPrep Packages=')
+    pkgsNames = binsprep.binsPrepPkgsSingleton.aptPkgsNames()
 
-    cmnd('aptPkgsList', comment=f" # List specified aptPkgs")
+    cs.examples.menuChapter(f'=BinsPrep Packages {pkgsNames}=')
+
+    cmnd('aptPkgs_list', comment=f" # List specified aptPkgs")
+
+    cmnd('aptPkg_isInstalled', args=f"{pkgsNames[0]}", comment=f" # List specified aptPkgs")
+
+    cmnd('aptPkgs_update', args="all", comment=f" # List specified aptPkgs")
+    cmnd('aptPkgs_update', args=f"{' '.join(pkgsNames)}", comment=f" # List specified aptPkgs")
+
     literal("hostname --fqdn", comment=" # usually used as control/me")
 
 ####+BEGIN: blee:bxPanel:foldingSection :outLevel 0 :sep nil :title "CmndSvcs" :anchor ""  :extraInfo "Command Services Section"
@@ -149,7 +159,7 @@ class aptPkgs_list(cs.Cmnd):
 
         if binsprep.binsPrepPkgsSingleton.aptPkgsList is not None:
             for eachPkg in binsprep.binsPrepPkgsSingleton.aptPkgsList:
-                print(f"pkgName = {eachPkg.aptPkgName}")
+                print(f"pkgName = {eachPkg.name}")
         else:
             print("Empty Pkgs List")
 
@@ -157,7 +167,200 @@ class aptPkgs_list(cs.Cmnd):
         #         f"""echo Provided Params and Args were: {processedParamsAndArgs} """,
         # ).isProblematic():  return(b_io.eh.badOutcome(cmndOutcome))
 
+        return cmndOutcome.set(opResults=binsprep.binsPrepPkgsSingleton.aptPkgsNames())
+
+
+####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "aptPkg_isInstalled" :comment "" :extent "verify" :ro "cli" :parsMand "" :parsOpt "" :argsMin 1 :argsMax 1 :pyInv ""
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<aptPkg_isInstalled>>  =verify= argsMin=1 argsMax=1 ro=cli   [[elisp:(org-cycle)][| ]]
+#+end_org """
+class aptPkg_isInstalled(cs.Cmnd):
+    cmndParamsMandatory = [ ]
+    cmndParamsOptional = [ ]
+    cmndArgsLen = {'Min': 1, 'Max': 1,}
+
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmnd(self,
+             rtInv: cs.RtInvoker,
+             cmndOutcome: b.op.Outcome,
+             argsList: typing.Optional[list[str]]=None,  # CsArgs
+    ) -> b.op.Outcome:
+
+        failed = b_io.eh.badOutcome
+        callParamsDict = {}
+        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, argsList).isProblematic():
+            return failed(cmndOutcome)
+        cmndArgsSpecDict = self.cmndArgsSpec()
+####+END:
+        if self.cmndDocStr(f""" #+begin_org
+** [[elisp:(org-cycle)][| *CmndDesc:* | ]]  A starting point command.
+        #+end_org """): return(cmndOutcome)
+
+        self.captureRunStr(""" #+begin_org
+#+begin_src sh :results output :session shared
+  facter.cs -i factName networking.primary os.distro.id
+#+end_src
+#+RESULTS:
+: [{'networking.primary': 'eno1'}, {'os.distro.id': 'Debian'}]
+        #+end_org """)
+
+        pkgName = self.cmndArgsGet("0&1", cmndArgsSpecDict, argsList)
+
+        if b.subProc.WOpW(invedBy=self, log=1).bash(
+               f"""apt list {pkgName[0]} --installed  2> /dev/null  | grep 'installed'""",
+        ).isProblematic():  return(b_io.eh.badOutcome(cmndOutcome))
+
+        if cmndOutcome.stdout == "":
+            result = False
+        else:
+            result = True
+
+        return cmndOutcome.set(opResults=result)
+
+####+BEGIN: b:py3:cs:method/args :methodName "cmndArgsSpec" :methodType "anyOrNone" :retType "bool" :deco "default" :argsList "self"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-anyOrNone [[elisp:(outline-show-subtree+toggle)][||]] /cmndArgsSpec/ deco=default  deco=default  [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmndArgsSpec(self, ):
+####+END:
+        """
+***** Cmnd Args Specification
+"""
+        cmndArgsSpecDict = cs.CmndArgsSpecDict()
+        cmndArgsSpecDict.argsDictAdd(
+            argPosition="0&1",
+            argName="pkgName",
+            argDefault='',
+            argChoices=[],
+            argDescription="One argument, any string as a pkgName"
+        )
+        return cmndArgsSpecDict
+
+
+####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "aptPkgs_update" :comment "" :extent "verify" :ro "cli" :parsMand "" :parsOpt "" :argsMin 1 :argsMax 9999 :pyInv ""
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<aptPkgs_update>>  =verify= argsMin=1 argsMax=9999 ro=cli   [[elisp:(org-cycle)][| ]]
+#+end_org """
+class aptPkgs_update(cs.Cmnd):
+    cmndParamsMandatory = [ ]
+    cmndParamsOptional = [ ]
+    cmndArgsLen = {'Min': 1, 'Max': 9999,}
+
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmnd(self,
+             rtInv: cs.RtInvoker,
+             cmndOutcome: b.op.Outcome,
+             argsList: typing.Optional[list[str]]=None,  # CsArgs
+    ) -> b.op.Outcome:
+
+        failed = b_io.eh.badOutcome
+        callParamsDict = {}
+        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, argsList).isProblematic():
+            return failed(cmndOutcome)
+        cmndArgsSpecDict = self.cmndArgsSpec()
+####+END:
+        if self.cmndDocStr(f""" #+begin_org
+** [[elisp:(org-cycle)][| *CmndDesc:* | ]]  A starting point command.
+        #+end_org """): return(cmndOutcome)
+
+        cmndArgsSpecDict = self.cmndArgsSpec()
+        cmndArgs = self.cmndArgsGet("0&9999", cmndArgsSpecDict, argsList)
+
+        if cmndArgs[0] == "all":
+            cmndArgs = binsprep.binsPrepPkgsSingleton.aptPkgsNames()
+
+        for each in cmndArgs:
+            if aptPkg_isInstalled().pyCmnd(cmndOutcome=cmndOutcome, argsList=[f"{each}"]).results:
+                print(f"{each} is already installed -- skipped")
+                continue
+            else:
+                aptPkg  = binsprep.binsPrepPkgsSingleton.namedAptPkg(each)
+                if aptPkg is None:
+                    b_io.eh.problem_usageError(f"each")
+                    continue
+                if aptPkg.func is None:
+                    if b.subProc.WOpW(invedBy=self, log=1).bash(
+                            f'''sudo apt-get install {each}''',
+                    ).isProblematic():  return(b_io.eh.badOutcome(cmndOutcome))
+                else:
+                    aptPkg.func()
+                    
+        return(cmndOutcome.set(opResults=None))
+
+####+BEGIN: b:py3:cs:method/args :methodName "cmndArgsSpec" :methodType "anyOrNone" :retType "bool" :deco "default" :argsList "self"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-anyOrNone [[elisp:(outline-show-subtree+toggle)][||]] /cmndArgsSpec/ deco=default  deco=default  [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmndArgsSpec(self, ):
+####+END:
+        """
+***** Cmnd Args Specification
+"""
+        cmndArgsSpecDict = cs.CmndArgsSpecDict()
+        cmndArgsSpecDict.argsDictAdd(
+            argPosition="0&9999",
+            argName="cmndArgs",
+            argDefault='',
+            argChoices=[],
+            argDescription="List of  pkgsNames"
+        )
+        return cmndArgsSpecDict
+    
+
+####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "aptPkgs_reRunAsRoot" :comment "" :extent "verify" :ro "cli" :parsMand "" :parsOpt "" :argsMin 0 :argsMax 0 :pyInv ""
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<aptPkgs_reRunAsRoot>>  =verify= ro=cli   [[elisp:(org-cycle)][| ]]
+#+end_org """
+class aptPkgs_reRunAsRoot(cs.Cmnd):
+    cmndParamsMandatory = [ ]
+    cmndParamsOptional = [ ]
+    cmndArgsLen = {'Min': 0, 'Max': 0,}
+
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmnd(self,
+             rtInv: cs.RtInvoker,
+             cmndOutcome: b.op.Outcome,
+    ) -> b.op.Outcome:
+
+        failed = b_io.eh.badOutcome
+        callParamsDict = {}
+        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, None).isProblematic():
+            return failed(cmndOutcome)
+####+END:
+        if self.cmndDocStr(f""" #+begin_org
+** [[elisp:(org-cycle)][| *CmndDesc:* | ]]  A starting point command.
+        #+end_org """): return(cmndOutcome)
+
+
+        if aptPkg_isInstalled().pyCmnd().results:
+            print(outcome.results)
+
+####+BEGIN: b:py3:cs/reRunAsRoot :verbosity "NOTYET"
+        """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  reRunAsRoot [[elisp:(outline-show-subtree+toggle)][||]] <<NOTYET>>   [[elisp:(org-cycle)][| ]]
+        #+end_org """
+        import os
+        if os.getuid() != 0:
+            import shutil
+            import sys
+            thisPython = shutil.which('python')
+            print(f'As {os.getuid()} -- Re Running As Root')
+            if b.subProc.WOpW(invedBy=self, log=1).bash(
+                 f'''sudo {thisPython} {' '.join(sys.argv)}''',
+            ).isProblematic():  return(b_io.eh.badOutcome(cmndOutcome))
+            return cmndOutcome
+
+####+END:
+
+        print(f"Running As {os.getuid()}")
+
+
         return cmndOutcome
+
+
+
 
 ####+BEGIN: b:py3:cs:framework/endOfFile :basedOn "classification"
 """ #+begin_org
