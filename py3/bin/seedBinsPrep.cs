@@ -168,8 +168,6 @@ class examples(cs.Cmnd):
 
         bleep.examples_icmBasic()
 
-        cs.examples.menuChapter('=Misc=  *Facilities*')
-
         binsprep_csu.examples_csu()
 
         # cs.examples.menuChapter('=ExecLine Example=  *Example Of Echo GPG Install Commands*')

@@ -108,18 +108,49 @@ def examples_csu(
     cmnd = cs.examples.cmndEnter
     literal = cs.examples.execInsert
 
-    pkgsNames = binsprep.binsPrepPkgsSingleton.aptPkgsNames()
+    aptPkgsNames = binsprep.binsPrepPkgsSingleton.aptPkgsNames()
+    pipPkgsNames = binsprep.binsPrepPkgsSingleton.pipPkgsNames()
+    pipxPkgsNames = binsprep.binsPrepPkgsSingleton.pipxPkgsNames()
 
-    cs.examples.menuChapter(f'=BinsPrep Packages {pkgsNames}=')
+    if len(aptPkgsNames) != 0:
+        cs.examples.menuChapter(f'=APT BinsPrep Packages {aptPkgsNames}=')
 
-    cmnd('aptPkgs_list', comment=f" # List specified aptPkgs")
+        cmnd('aptPkgs_list', comment=f" # List specified aptPkgs")
 
-    cmnd('aptPkg_isInstalled', args=f"{pkgsNames[0]}", comment=f" # List specified aptPkgs")
+        cmnd('aptPkg_isInstalled', args=f"{aptPkgsNames[0]}", comment=f" # Is the specified aptPkg installed")
 
-    cmnd('aptPkgs_update', args="all", comment=f" # List specified aptPkgs")
-    cmnd('aptPkgs_update', args=f"{' '.join(pkgsNames)}", comment=f" # List specified aptPkgs")
+        cmnd('aptPkgs_update', args="all", comment=f" # Install or Update spec aptPkgs")
+        cmnd('aptPkgs_update', args=f"{' '.join(aptPkgsNames)}", comment=f" # List specified aptPkgs")
 
-    literal("hostname --fqdn", comment=" # usually used as control/me")
+    if len(pipPkgsNames) != 0:
+        cs.examples.menuChapter(f'=PIP BinsPrep Packages {pipPkgsNames}=')
+
+        cmnd('pipPkgs_list', comment=f" # List specified pipPkgs")
+
+        cmnd('pipPkg_isInstalled', args=f"{pipPkgsNames[0]}", comment=f" # Is the specified pipPkg installed")
+
+        cmnd('pipPkgs_update', args="all", comment=f" # Install or Update spec pipPkgs")
+        cmnd('pipPkgs_update', args=f"{' '.join(pipPkgsNames)}", comment=f" # List specified pipPkgs")
+
+    if len(pipxPkgsNames) != 0:
+        cs.examples.menuChapter(f'=PIPX BinsPrep Packages {pipxPkgsNames}=')
+
+        cmnd('pipxPkgs_list', comment=f" # List specified pipxPkgs")
+
+        cmnd('pipxPkg_isInstalled', args=f"{pipxPkgsNames[0]}", comment=f" # Is the specified pipxPkg installed")
+
+        cmnd('pipxPkgs_update', args="all", comment=f" # Install or Update spec pipxPkgs")
+        cmnd('pipxPkgs_update', args=f"{' '.join(pipxPkgsNames)}", comment=f" # List specified pipxPkgs")
+
+    cs.examples.menuChapter(f'=Full Update -- Apt, Pip and  Pipx=')
+
+    cmnd('binsPrep_fullUpdate', comment=f" # Apt, Pip and  Pipx")
+
+
+    # literal("hostname --fqdn", comment=" # usually used as control/me")
+
+    if binsprep.binsPrepPkgsSingleton.examplesHook is not None:
+        binsprep.binsPrepPkgsSingleton.examplesHook()
 
 ####+BEGIN: blee:bxPanel:foldingSection :outLevel 0 :sep nil :title "CmndSvcs" :anchor ""  :extraInfo "Command Services Section"
 """ #+begin_org
@@ -127,9 +158,54 @@ def examples_csu(
 #+end_org """
 ####+END:
 
-####+BEGIN: bx:icm:py3:section :title "CS-Commands"
+
+####+BEGIN: bx:icm:py3:section :title "CS-Commands --- Full Update"
 """ #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  /Section/    [[elisp:(outline-show-subtree+toggle)][||]] *CS-Commands*  [[elisp:(org-cycle)][| ]]
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  /Section/    [[elisp:(outline-show-subtree+toggle)][||]] *CS-Commands --- Apt Packages*  [[elisp:(org-cycle)][| ]]
+#+end_org """
+####+END:
+
+####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "binsPrep_fullUpdate" :comment "" :extent "verify" :ro "cli" :parsMand "" :parsOpt "" :argsMin 0 :argsMax 0 :pyInv ""
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<binsPrep_fullUpdate>>  =verify= ro=cli   [[elisp:(org-cycle)][| ]]
+#+end_org """
+class binsPrep_fullUpdate(cs.Cmnd):
+    cmndParamsMandatory = [ ]
+    cmndParamsOptional = [ ]
+    cmndArgsLen = {'Min': 0, 'Max': 0,}
+
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmnd(self,
+             rtInv: cs.RtInvoker,
+             cmndOutcome: b.op.Outcome,
+    ) -> b.op.Outcome:
+
+        failed = b_io.eh.badOutcome
+        callParamsDict = {}
+        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, None).isProblematic():
+            return failed(cmndOutcome)
+####+END:
+        if self.cmndDocStr(f""" #+begin_org
+** [[elisp:(org-cycle)][| *CmndDesc:* | ]]  A starting point command.
+        #+end_org """): return(cmndOutcome)
+
+        if aptPkgs_update().pyCmnd(cmndOutcome=cmndOutcome, argsList=["all"]
+                                  ).isProblematic():
+            return(b_io.eh.badOutcome(cmndOutcome))
+        if pipPkgs_update().pyCmnd(cmndOutcome=cmndOutcome, argsList=["all"]
+                                  ).isProblematic():
+            return(b_io.eh.badOutcome(cmndOutcome))
+        if pipxPkgs_update().pyCmnd(cmndOutcome=cmndOutcome, argsList=["all"]
+                                  ).isProblematic():
+            return(b_io.eh.badOutcome(cmndOutcome))
+
+        return cmndOutcome
+
+
+
+####+BEGIN: bx:icm:py3:section :title "CS-Commands --- Apt Packages"
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  /Section/    [[elisp:(outline-show-subtree+toggle)][||]] *CS-Commands --- Apt Packages*  [[elisp:(org-cycle)][| ]]
 #+end_org """
 ####+END:
 
@@ -162,10 +238,6 @@ class aptPkgs_list(cs.Cmnd):
                 print(f"pkgName = {eachPkg.name}")
         else:
             print("Empty Pkgs List")
-
-        # if b.subProc.WOpW(invedBy=self, log=1).bash(
-        #         f"""echo Provided Params and Args were: {processedParamsAndArgs} """,
-        # ).isProblematic():  return(b_io.eh.badOutcome(cmndOutcome))
 
         return cmndOutcome.set(opResults=binsprep.binsPrepPkgsSingleton.aptPkgsNames())
 
@@ -206,11 +278,17 @@ class aptPkg_isInstalled(cs.Cmnd):
 
         pkgName = self.cmndArgsGet("0&1", cmndArgsSpecDict, argsList)
 
-        if b.subProc.WOpW(invedBy=self, log=1).bash(
-               f"""apt list {pkgName[0]} --installed  2> /dev/null  | grep 'installed'""",
-        ).isProblematic():  return(b_io.eh.badOutcome(cmndOutcome))
+        # if b.subProc.WOpW(invedBy=self, log=1).bash(
+        #        f"""apt list {pkgName[0]} --installed  2> /dev/null  | grep 'installed'""",
+        # ).isProblematic():
+        #     pass
+        #     # return(b_io.eh.badOutcome(cmndOutcome))
 
-        if cmndOutcome.stdout == "":
+        if b.subProc.WOpW(invedBy=self, log=1).bash(
+               f"""apt list {pkgName[0]} --installed  2> /dev/null""",
+        ).isProblematic(): return(b_io.eh.badOutcome(cmndOutcome))
+
+        if cmndOutcome.stdout.find('installed') == -1:
             result = False
         else:
             result = True
@@ -269,6 +347,8 @@ class aptPkgs_update(cs.Cmnd):
 
         if cmndArgs[0] == "all":
             cmndArgs = binsprep.binsPrepPkgsSingleton.aptPkgsNames()
+            if len(cmndArgs) == 0:
+                cmndOutcome.report("No AptPkgs -- Installation skipped")
 
         for each in cmndArgs:
             if aptPkg_isInstalled().pyCmnd(cmndOutcome=cmndOutcome, argsList=[f"{each}"]).results:
@@ -282,7 +362,9 @@ class aptPkgs_update(cs.Cmnd):
                 if aptPkg.func is None:
                     if b.subProc.WOpW(invedBy=self, log=1).bash(
                             f'''sudo apt-get install {each}''',
-                    ).isProblematic():  return(b_io.eh.badOutcome(cmndOutcome))
+                    ).isProblematic():
+                        pass
+                        # return(b_io.eh.badOutcome(cmndOutcome))
                 else:
                     aptPkg.func()
                     
@@ -307,7 +389,368 @@ class aptPkgs_update(cs.Cmnd):
             argDescription="List of  pkgsNames"
         )
         return cmndArgsSpecDict
-    
+
+
+####+BEGIN: bx:icm:py3:section :title "CS-Commands --- Pip Packages"
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  /Section/    [[elisp:(outline-show-subtree+toggle)][||]] *CS-Commands --- Pip Packages*  [[elisp:(org-cycle)][| ]]
+#+end_org """
+####+END:
+
+####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "pipPkgs_list" :comment "" :extent "verify" :ro "cli" :parsMand "" :parsOpt "" :argsMin 0 :argsMax 0 :pyInv ""
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<pipPkgs_list>>  =verify= ro=cli   [[elisp:(org-cycle)][| ]]
+#+end_org """
+class pipPkgs_list(cs.Cmnd):
+    cmndParamsMandatory = [ ]
+    cmndParamsOptional = [ ]
+    cmndArgsLen = {'Min': 0, 'Max': 0,}
+
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmnd(self,
+             rtInv: cs.RtInvoker,
+             cmndOutcome: b.op.Outcome,
+    ) -> b.op.Outcome:
+
+        failed = b_io.eh.badOutcome
+        callParamsDict = {}
+        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, None).isProblematic():
+            return failed(cmndOutcome)
+####+END:
+        if self.cmndDocStr(f""" #+begin_org
+** [[elisp:(org-cycle)][| *CmndDesc:* | ]]  A starting point command.
+        #+end_org """): return(cmndOutcome)
+
+        if binsprep.binsPrepPkgsSingleton.pipPkgsList is not None:
+            for eachPkg in binsprep.binsPrepPkgsSingleton.pipPkgsList:
+                pass
+                # print(f"pkgName = {eachPkg.name}")
+        else:
+            print("Empty Pkgs List")
+
+        return cmndOutcome.set(opResults=binsprep.binsPrepPkgsSingleton.pipPkgsNames())
+
+
+####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "pipPkg_isInstalled" :comment "" :extent "verify" :ro "cli" :parsMand "" :parsOpt "" :argsMin 1 :argsMax 1 :pyInv ""
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<pipPkg_isInstalled>>  =verify= argsMin=1 argsMax=1 ro=cli   [[elisp:(org-cycle)][| ]]
+#+end_org """
+class pipPkg_isInstalled(cs.Cmnd):
+    cmndParamsMandatory = [ ]
+    cmndParamsOptional = [ ]
+    cmndArgsLen = {'Min': 1, 'Max': 1,}
+
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmnd(self,
+             rtInv: cs.RtInvoker,
+             cmndOutcome: b.op.Outcome,
+             argsList: typing.Optional[list[str]]=None,  # CsArgs
+    ) -> b.op.Outcome:
+
+        failed = b_io.eh.badOutcome
+        callParamsDict = {}
+        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, argsList).isProblematic():
+            return failed(cmndOutcome)
+        cmndArgsSpecDict = self.cmndArgsSpec()
+####+END:
+        if self.cmndDocStr(f""" #+begin_org
+** [[elisp:(org-cycle)][| *CmndDesc:* | ]]  A starting point command.
+        #+end_org """): return(cmndOutcome)
+
+        self.captureRunStr(""" #+begin_org
+#+begin_src sh :results output :session shared
+  facter.cs -i factName networking.primary os.distro.id
+#+end_src
+#+RESULTS:
+: [{'networking.primary': 'eno1'}, {'os.distro.id': 'Debian'}]
+        #+end_org """)
+
+        pkgName = self.cmndArgsGet("0&1", cmndArgsSpecDict, argsList)
+
+        if b.subProc.WOpW(invedBy=self, log=0).bash(
+               f"""pip list""",
+        ).isProblematic(): return(b_io.eh.badOutcome(cmndOutcome))
+
+        if cmndOutcome.stdout.find(f'{pkgName[0]}') == -1:
+            result = False
+        else:
+            result = True
+
+        return cmndOutcome.set(opResults=result)
+
+####+BEGIN: b:py3:cs:method/args :methodName "cmndArgsSpec" :methodType "anyOrNone" :retType "bool" :deco "default" :argsList "self"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-anyOrNone [[elisp:(outline-show-subtree+toggle)][||]] /cmndArgsSpec/ deco=default  deco=default  [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmndArgsSpec(self, ):
+####+END:
+        """
+***** Cmnd Args Specification
+"""
+        cmndArgsSpecDict = cs.CmndArgsSpecDict()
+        cmndArgsSpecDict.argsDictAdd(
+            argPosition="0&1",
+            argName="pkgName",
+            argDefault='',
+            argChoices=[],
+            argDescription="One argument, any string as a pkgName"
+        )
+        return cmndArgsSpecDict
+
+
+####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "pipPkgs_update" :comment "" :extent "verify" :ro "cli" :parsMand "" :parsOpt "" :argsMin 1 :argsMax 9999 :pyInv ""
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<pipPkgs_update>>  =verify= argsMin=1 argsMax=9999 ro=cli   [[elisp:(org-cycle)][| ]]
+#+end_org """
+class pipPkgs_update(cs.Cmnd):
+    cmndParamsMandatory = [ ]
+    cmndParamsOptional = [ ]
+    cmndArgsLen = {'Min': 1, 'Max': 9999,}
+
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmnd(self,
+             rtInv: cs.RtInvoker,
+             cmndOutcome: b.op.Outcome,
+             argsList: typing.Optional[list[str]]=None,  # CsArgs
+    ) -> b.op.Outcome:
+
+        failed = b_io.eh.badOutcome
+        callParamsDict = {}
+        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, argsList).isProblematic():
+            return failed(cmndOutcome)
+        cmndArgsSpecDict = self.cmndArgsSpec()
+####+END:
+        if self.cmndDocStr(f""" #+begin_org
+** [[elisp:(org-cycle)][| *CmndDesc:* | ]]  A starting point command.
+        #+end_org """): return(cmndOutcome)
+
+        cmndArgsSpecDict = self.cmndArgsSpec()
+        cmndArgs = self.cmndArgsGet("0&9999", cmndArgsSpecDict, argsList)
+
+        if cmndArgs[0] == "all":
+            cmndArgs = binsprep.binsPrepPkgsSingleton.pipPkgsNames()
+
+        for each in cmndArgs:
+            if pipPkg_isInstalled().pyCmnd(cmndOutcome=cmndOutcome, argsList=[f"{each}"]).results:
+                print(f"{each} PIP Package is already installed -- skipped")
+                continue
+            else:
+                pipPkg  = binsprep.binsPrepPkgsSingleton.namedPipPkg(each)
+                if pipPkg is None:
+                    b_io.eh.problem_usageError(f"each")
+                    continue
+                if b.subProc.WOpW(invedBy=self, log=1).bash(
+                        f'''pip install {each}''',
+                ).isProblematic():
+                    b_io.eh.problem_usageError(f"each")
+
+        return(cmndOutcome.set(opResults=None))
+
+####+BEGIN: b:py3:cs:method/args :methodName "cmndArgsSpec" :methodType "anyOrNone" :retType "bool" :deco "default" :argsList "self"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-anyOrNone [[elisp:(outline-show-subtree+toggle)][||]] /cmndArgsSpec/ deco=default  deco=default  [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmndArgsSpec(self, ):
+####+END:
+        """
+***** Cmnd Args Specification
+"""
+        cmndArgsSpecDict = cs.CmndArgsSpecDict()
+        cmndArgsSpecDict.argsDictAdd(
+            argPosition="0&9999",
+            argName="cmndArgs",
+            argDefault='',
+            argChoices=[],
+            argDescription="List of  pkgsNames"
+        )
+        return cmndArgsSpecDict
+
+
+####+BEGIN: bx:icm:py3:section :title "CS-Commands --- Pipx Packages"
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  /Section/    [[elisp:(outline-show-subtree+toggle)][||]] *CS-Commands --- Pipx Packages*  [[elisp:(org-cycle)][| ]]
+#+end_org """
+####+END:
+
+####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "pipxPkgs_list" :comment "" :extent "verify" :ro "cli" :parsMand "" :parsOpt "" :argsMin 0 :argsMax 0 :pyInv ""
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<pipxPkgs_list>>  =verify= ro=cli   [[elisp:(org-cycle)][| ]]
+#+end_org """
+class pipxPkgs_list(cs.Cmnd):
+    cmndParamsMandatory = [ ]
+    cmndParamsOptional = [ ]
+    cmndArgsLen = {'Min': 0, 'Max': 0,}
+
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmnd(self,
+             rtInv: cs.RtInvoker,
+             cmndOutcome: b.op.Outcome,
+    ) -> b.op.Outcome:
+
+        failed = b_io.eh.badOutcome
+        callParamsDict = {}
+        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, None).isProblematic():
+            return failed(cmndOutcome)
+####+END:
+        if self.cmndDocStr(f""" #+begin_org
+** [[elisp:(org-cycle)][| *CmndDesc:* | ]]  A starting point command.
+        #+end_org """): return(cmndOutcome)
+
+        if binsprep.binsPrepPkgsSingleton.pipxPkgsList is not None:
+            for eachPkg in binsprep.binsPrepPkgsSingleton.pipxPkgsList:
+                pass
+                # print(f"pkgName = {eachPkg.name}")
+        else:
+            print("Empty Pkgs List")
+
+        return cmndOutcome.set(opResults=binsprep.binsPrepPkgsSingleton.pipxPkgsNames())
+
+
+####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "pipxPkg_isInstalled" :comment "" :extent "verify" :ro "cli" :parsMand "" :parsOpt "" :argsMin 1 :argsMax 1 :pyInv ""
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<pipxPkg_isInstalled>>  =verify= argsMin=1 argsMax=1 ro=cli   [[elisp:(org-cycle)][| ]]
+#+end_org """
+class pipxPkg_isInstalled(cs.Cmnd):
+    cmndParamsMandatory = [ ]
+    cmndParamsOptional = [ ]
+    cmndArgsLen = {'Min': 1, 'Max': 1,}
+
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmnd(self,
+             rtInv: cs.RtInvoker,
+             cmndOutcome: b.op.Outcome,
+             argsList: typing.Optional[list[str]]=None,  # CsArgs
+    ) -> b.op.Outcome:
+
+        failed = b_io.eh.badOutcome
+        callParamsDict = {}
+        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, argsList).isProblematic():
+            return failed(cmndOutcome)
+        cmndArgsSpecDict = self.cmndArgsSpec()
+####+END:
+        if self.cmndDocStr(f""" #+begin_org
+** [[elisp:(org-cycle)][| *CmndDesc:* | ]]  A starting point command.
+        #+end_org """): return(cmndOutcome)
+
+        self.captureRunStr(""" #+begin_org
+#+begin_src sh :results output :session shared
+  facter.cs -i factName networking.primary os.distro.id
+#+end_src
+#+RESULTS:
+: [{'networking.primary': 'eno1'}, {'os.distro.id': 'Debian'}]
+        #+end_org """)
+
+        pkgName = self.cmndArgsGet("0&1", cmndArgsSpecDict, argsList)
+
+        if b.subProc.WOpW(invedBy=self, log=0).bash(
+               f"""pipx list""",
+        ).isProblematic(): return(b_io.eh.badOutcome(cmndOutcome))
+
+        if cmndOutcome.stdout.find(f'package {pkgName[0]}') == -1:
+            result = False
+        else:
+            result = True
+
+        return cmndOutcome.set(opResults=result)
+
+####+BEGIN: b:py3:cs:method/args :methodName "cmndArgsSpec" :methodType "anyOrNone" :retType "bool" :deco "default" :argsList "self"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-anyOrNone [[elisp:(outline-show-subtree+toggle)][||]] /cmndArgsSpec/ deco=default  deco=default  [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmndArgsSpec(self, ):
+####+END:
+        """
+***** Cmnd Args Specification
+"""
+        cmndArgsSpecDict = cs.CmndArgsSpecDict()
+        cmndArgsSpecDict.argsDictAdd(
+            argPosition="0&1",
+            argName="pkgName",
+            argDefault='',
+            argChoices=[],
+            argDescription="One argument, any string as a pkgName"
+        )
+        return cmndArgsSpecDict
+
+
+####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "pipxPkgs_update" :comment "" :extent "verify" :ro "cli" :parsMand "" :parsOpt "" :argsMin 1 :argsMax 9999 :pyInv ""
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  CmndSvc-   [[elisp:(outline-show-subtree+toggle)][||]] <<pipxPkgs_update>>  =verify= argsMin=1 argsMax=9999 ro=cli   [[elisp:(org-cycle)][| ]]
+#+end_org """
+class pipxPkgs_update(cs.Cmnd):
+    cmndParamsMandatory = [ ]
+    cmndParamsOptional = [ ]
+    cmndArgsLen = {'Min': 1, 'Max': 9999,}
+
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmnd(self,
+             rtInv: cs.RtInvoker,
+             cmndOutcome: b.op.Outcome,
+             argsList: typing.Optional[list[str]]=None,  # CsArgs
+    ) -> b.op.Outcome:
+
+        failed = b_io.eh.badOutcome
+        callParamsDict = {}
+        if self.invocationValidate(rtInv, cmndOutcome, callParamsDict, argsList).isProblematic():
+            return failed(cmndOutcome)
+        cmndArgsSpecDict = self.cmndArgsSpec()
+####+END:
+        if self.cmndDocStr(f""" #+begin_org
+** [[elisp:(org-cycle)][| *CmndDesc:* | ]]  A starting point command.
+        #+end_org """): return(cmndOutcome)
+
+        cmndArgsSpecDict = self.cmndArgsSpec()
+        cmndArgs = self.cmndArgsGet("0&9999", cmndArgsSpecDict, argsList)
+
+        if cmndArgs[0] == "all":
+            cmndArgs = binsprep.binsPrepPkgsSingleton.pipxPkgsNames()
+
+        for each in cmndArgs:
+            if pipxPkg_isInstalled().pyCmnd(cmndOutcome=cmndOutcome, argsList=[f"{each}"]).results:
+                print(f"{each} PIPX Package is already installed -- skipped")
+                continue
+            else:
+                pipPkg  = binsprep.binsPrepPkgsSingleton.namedPipxPkg(each)
+                if pipPkg is None:
+                    b_io.eh.problem_usageError(f"OOPS -- {each}")
+                    continue
+                if b.subProc.WOpW(invedBy=self, log=1).bash(
+                        f'''pipx install {each}''',
+                ).isProblematic():
+                    b_io.eh.problem_usageError(f"pipx install {each}")
+
+        return(cmndOutcome.set(opResults=None))
+
+####+BEGIN: b:py3:cs:method/args :methodName "cmndArgsSpec" :methodType "anyOrNone" :retType "bool" :deco "default" :argsList "self"
+    """ #+begin_org
+**  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Mtd-T-anyOrNone [[elisp:(outline-show-subtree+toggle)][||]] /cmndArgsSpec/ deco=default  deco=default  [[elisp:(org-cycle)][| ]]
+    #+end_org """
+    @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+    def cmndArgsSpec(self, ):
+####+END:
+        """
+***** Cmnd Args Specification
+"""
+        cmndArgsSpecDict = cs.CmndArgsSpecDict()
+        cmndArgsSpecDict.argsDictAdd(
+            argPosition="0&9999",
+            argName="cmndArgs",
+            argDefault='',
+            argChoices=[],
+            argDescription="List of  pkgsNames"
+        )
+        return cmndArgsSpecDict
+
+
+####+BEGIN: bx:icm:py3:section :title "Obsoleted -- JunkYard -- CS-Commands"
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  /Section/    [[elisp:(outline-show-subtree+toggle)][||]] *Obsoleted -- JunkYard -- CS-Commands*  [[elisp:(org-cycle)][| ]]
+#+end_org """
+####+END:
+
 
 ####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "aptPkgs_reRunAsRoot" :comment "" :extent "verify" :ro "cli" :parsMand "" :parsOpt "" :argsMin 0 :argsMax 0 :pyInv ""
 """ #+begin_org

@@ -87,9 +87,9 @@ import collections
 #+end_org """
 ####+END:
 
-####+BEGIN: b:py3:class/decl :className "AptPkg" :superClass "object" :comment "Abstraction of a  Interface" :classType "basic"
+####+BEGIN: b:py3:class/decl :className "AptPkg" :superClass "object" :comment "Abstraction of an Apt Package" :classType "basic"
 """ #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Cls-basic  [[elisp:(outline-show-subtree+toggle)][||]] /AptPkg/  superClass=object =Abstraction of a  Interface=  [[elisp:(org-cycle)][| ]]
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Cls-basic  [[elisp:(outline-show-subtree+toggle)][||]] /AptPkg/  superClass=object =Abstraction of an Apt Package=  [[elisp:(org-cycle)][| ]]
 #+end_org """
 class AptPkg(object):
 ####+END:
@@ -130,6 +130,39 @@ class AptPkg(object):
     def osVers(self, value: list[str] | None,):
         self._osVers = value
 
+####+BEGIN: b:py3:class/decl :className "PipPkg" :superClass "object" :comment "Abstraction of a Pip Package" :classType "basic"
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Cls-basic  [[elisp:(outline-show-subtree+toggle)][||]] /PipPkg/  superClass=object =Abstraction of a Pip Package=  [[elisp:(org-cycle)][| ]]
+#+end_org """
+class PipPkg(object):
+####+END:
+    """
+** Abstraction of
+"""
+    def __init__(
+            self,
+            name: str | None =None,
+            ver: str | None =None,
+    ):
+        self._pipPkgName = name
+        self._ver = ver
+
+    @property
+    def name(self) -> str | None:
+        return self._pipPkgName
+
+    @name.setter
+    def name(self, value: str | None,):
+        self._pipPkgName = value
+
+    @property
+    def ver(self) -> str | None:
+        return self._ver
+
+    @ver.setter
+    def ver(self, value: str | None,):
+        self._ver = value
+
 
 ####+BEGIN: b:py3:class/decl :className "BinsPrepPkgsSingleton" :superClass "object" :comment "Abstraction of a  Interface" :classType "basic"
 """ #+begin_org
@@ -153,16 +186,47 @@ class BinsPrepPkgsSingleton(object):
     def __init__(
             self,
             aptPkgsList: list[AptPkg] | None =None,
+            pipPkgsList: list[PipPkg] | None =None,
+            pipxPkgsList: list[PipPkg] | None =None,
+            examplesHook: typing.Callable | None =None,
     ):
         self._aptPkgsList = aptPkgsList
+        self._pipPkgsList = pipPkgsList
+        self._pipxPkgsList = pipPkgsList
+        self._examplesHook = examplesHook
 
     @property
     def aptPkgsList(self) -> list[AptPkg] | None:
         return self._aptPkgsList
 
     @aptPkgsList.setter
-    def aptPkgsList(self, value: list[AptPkg],):
+    def aptPkgsList(self, value: list[AptPkg] | None,):
         self._aptPkgsList = value
+
+    @property
+    def pipPkgsList(self) -> list[PipPkg] | None:
+        return self._pipPkgsList
+
+    @pipPkgsList.setter
+    def pipPkgsList(self, value: list[PipPkg] | None,):
+        self._pipPkgsList = value
+
+    @property
+    def pipxPkgsList(self) -> list[PipPkg] | None:
+        return self._pipxPkgsList
+
+    @pipxPkgsList.setter
+    def pipxPkgsList(self, value: list[PipPkg] | None,):
+        self._pipxPkgsList = value
+
+
+    @property
+    def examplesHook(self) -> typing.Callable | None:
+        return self._examplesHook
+
+    @examplesHook.setter
+    def examplesHook(self, value: typing.Callable | None,):
+        self._examplesHook = value
 
     def aptPkgsNames(self,) -> list[str]:
         result: list[str] = []
@@ -179,6 +243,50 @@ class BinsPrepPkgsSingleton(object):
         if self.aptPkgsList is None:
             return result
         for eachPkg in self.aptPkgsList:
+            if eachPkg.name is None:
+                continue
+            elif eachPkg.name == name:
+                result = eachPkg
+            else:
+                continue
+
+    def pipPkgsNames(self,) -> list[str]:
+        result: list[str] = []
+        if self.pipPkgsList is None:
+            return result
+        for eachPkg in self.pipPkgsList:
+            if eachPkg.name is None:
+                continue
+            result.append(eachPkg.name)
+        return result
+
+    def namedPipPkg(self, name: str) -> PipPkg | None:
+        result: PipPkg | None = None
+        if self.pipPkgsList is None:
+            return result
+        for eachPkg in self.pipPkgsList:
+            if eachPkg.name is None:
+                continue
+            elif eachPkg.name == name:
+                result = eachPkg
+            else:
+                continue
+
+    def pipxPkgsNames(self,) -> list[str]:
+        result: list[str] = []
+        if self.pipxPkgsList is None:
+            return result
+        for eachPkg in self.pipxPkgsList:
+            if eachPkg.name is None:
+                continue
+            result.append(eachPkg.name)
+        return result
+
+    def namedPipxPkg(self, name: str) -> PipPkg | None:
+        result: PipPkg | None = None
+        if self.pipxPkgsList is None:
+            return result
+        for eachPkg in self.pipxPkgsList:
             if eachPkg.name is None:
                 continue
             elif eachPkg.name == name:
@@ -213,7 +321,23 @@ def aptPkg(
     #+end_org """
 
     pkg = AptPkg(name=pkgName, func=func, osVers=osVers)
+    return pkg
 
+####+BEGIN: b:py3:cs:func/typing :funcName "pipPkg" :funcType "extTyped" :deco "track"
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  F-T-extTyped [[elisp:(outline-show-subtree+toggle)][||]] /pipPkg/  deco=track  [[elisp:(org-cycle)][| ]]
+#+end_org """
+@cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+def pipPkg(
+####+END:
+        pkgName: str,
+        ver: str | None = None,
+) -> PipPkg:
+    """ #+begin_org
+** [[elisp:(org-cycle)][| *DocStr | ]
+    #+end_org """
+
+    pkg = PipPkg(name=pkgName, ver=ver)
     return pkg
 
 ####+BEGIN: b:py3:cs:func/typing :funcName "setup" :funcType "extTyped" :deco "track"
@@ -223,12 +347,18 @@ def aptPkg(
 @cs.track(fnLoc=True, fnEntry=True, fnExit=True)
 def setup(
 ####+END:
-        aptPkgsList: list[AptPkg],
+        aptPkgsList: list[AptPkg] | None = None,
+        pipPkgsList: list[PipPkg] | None = None,
+        pipxPkgsList: list[PipPkg] | None = None,
+        examplesHook: typing.Callable | None = None,
 ):
     """ #+begin_org
 ** [[elisp:(org-cycle)][| *DocStr | ]
     #+end_org """
     binsPrepPkgsSingleton.aptPkgsList  = aptPkgsList
+    binsPrepPkgsSingleton.pipPkgsList  = pipPkgsList
+    binsPrepPkgsSingleton.pipxPkgsList  = pipxPkgsList
+    binsPrepPkgsSingleton.examplesHook  = examplesHook
 
 
 ####+BEGIN: b:py3:cs:framework/endOfFile :basedOn "classification"
