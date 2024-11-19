@@ -241,6 +241,7 @@ class BinsPrepPkgsSingleton(object):
     def namedAptPkg(self, name: str) -> AptPkg | None:
         result: AptPkg | None = None
         if self.aptPkgsList is None:
+            print(f"EH_problem NOTYET -- self.aptPkgsList is None")
             return result
         for eachPkg in self.aptPkgsList:
             if eachPkg.name is None:
@@ -249,6 +250,7 @@ class BinsPrepPkgsSingleton(object):
                 result = eachPkg
             else:
                 continue
+        return result
 
     def pipPkgsNames(self,) -> list[str]:
         result: list[str] = []
@@ -271,6 +273,7 @@ class BinsPrepPkgsSingleton(object):
                 result = eachPkg
             else:
                 continue
+        return result
 
     def pipxPkgsNames(self,) -> list[str]:
         result: list[str] = []

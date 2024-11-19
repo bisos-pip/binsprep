@@ -8,8 +8,15 @@
 #+end_org """
 ####+END:
 
+""" #+begin_org
+* Panel::  [[file:/bisos/panels/bisos-apps/lcnt/lcntScreencasting/subTitles/_nodeBase_/fullUsagePanel-en.org]]
+* Overview and Relevant Pointers
+#+end_org """
+
+
 from bisos.binsprep import binsprep
 ap = binsprep.aptPkg
+pp = binsprep.pipPkg
 
 aptPkgsList = [
     ap("djbdns"),
@@ -17,9 +24,22 @@ aptPkgsList = [
     # ap("", instFn=someFunc),
 ]
 
+pipPkgsList = [
+    pp("bisos.marmee"),
+]
+
+pipxPkgsList = [
+    pp("bisos.marmee"),
+]
+
+
 binsprep.setup(
     aptPkgsList=aptPkgsList,
+    pipPkgsList=pipPkgsList,
+    pipxPkgsList=pipxPkgsList,
+    # examplesHook=qmail_binsPrep.examples_csu,
 )
+
 
 ####+BEGIN: b:py3:cs:seed/binsprep :origin "pipx"
 """ #+begin_org

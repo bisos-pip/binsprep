@@ -355,9 +355,10 @@ class aptPkgs_update(cs.Cmnd):
                 print(f"{each} is already installed -- skipped")
                 continue
             else:
+                # <2024-11-18 Mon 14:05>  MB -- Notyet, below commented out not working
                 aptPkg  = binsprep.binsPrepPkgsSingleton.namedAptPkg(each)
                 if aptPkg is None:
-                    b_io.eh.problem_usageError(f"each")
+                    b_io.eh.problem_usageError(f"{each}")
                     continue
                 if aptPkg.func is None:
                     if b.subProc.WOpW(invedBy=self, log=1).bash(
@@ -538,12 +539,12 @@ class pipPkgs_update(cs.Cmnd):
             else:
                 pipPkg  = binsprep.binsPrepPkgsSingleton.namedPipPkg(each)
                 if pipPkg is None:
-                    b_io.eh.problem_usageError(f"each")
+                    b_io.eh.problem_usageError(f"{each}")
                     continue
                 if b.subProc.WOpW(invedBy=self, log=1).bash(
                         f'''pip install {each}''',
                 ).isProblematic():
-                    b_io.eh.problem_usageError(f"each")
+                    b_io.eh.problem_usageError(f"{each}")
 
         return(cmndOutcome.set(opResults=None))
 
