@@ -164,11 +164,11 @@ class PipPkg(object):
         self._ver = value
 
 
-####+BEGIN: b:py3:class/decl :className "BinsPrepPkgsSingleton" :superClass "object" :comment "Abstraction of a  Interface" :classType "basic"
+####+BEGIN: b:py3:class/decl :className "BinsPrepSeedInfo" :superClass "object" :comment "Abstraction of a  Interface" :classType "basic"
 """ #+begin_org
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Cls-basic  [[elisp:(outline-show-subtree+toggle)][||]] /BinsPrepPkgsSingleton/  superClass=object =Abstraction of a  Interface=  [[elisp:(org-cycle)][| ]]
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  Cls-basic  [[elisp:(outline-show-subtree+toggle)][||]] /BinsPrepSeedInfo/  superClass=object =Abstraction of a  Interface=  [[elisp:(org-cycle)][| ]]
 #+end_org """
-class BinsPrepPkgsSingleton(object):
+class BinsPrepSeedInfo(object):
 ####+END:
     """
 ** Abstraction of
@@ -179,7 +179,7 @@ class BinsPrepPkgsSingleton(object):
     def __new__(cls):
         if cls._instance is None:
             # print('Creating the object')
-            cls._instance = super(BinsPrepPkgsSingleton, cls).__new__(cls)
+            cls._instance = super(BinsPrepSeedInfo, cls).__new__(cls)
             # Put any initialization here.
         return cls._instance
 
@@ -194,6 +194,14 @@ class BinsPrepPkgsSingleton(object):
         self._pipPkgsList = pipPkgsList
         self._pipxPkgsList = pipPkgsList
         self._examplesHook = examplesHook
+
+    @property
+    def seedType(self) -> str | None:
+        return self._seedType
+
+    @seedType.setter
+    def seedType(self, value: str | None,):
+        self._seedType = value
 
     @property
     def aptPkgsList(self) -> list[AptPkg] | None:
@@ -300,7 +308,7 @@ class BinsPrepPkgsSingleton(object):
         return result
 
 
-binsPrepPkgsSingleton = BinsPrepPkgsSingleton()
+binsPrepSeedInfo = BinsPrepSeedInfo()
 
 ####+BEGIN: bx:cs:py3:section :title "Public Functions"
 """ #+begin_org
@@ -358,10 +366,10 @@ def setup(
     """ #+begin_org
 ** [[elisp:(org-cycle)][| *DocStr | ]
     #+end_org """
-    binsPrepPkgsSingleton.aptPkgsList  = aptPkgsList
-    binsPrepPkgsSingleton.pipPkgsList  = pipPkgsList
-    binsPrepPkgsSingleton.pipxPkgsList  = pipxPkgsList
-    binsPrepPkgsSingleton.examplesHook  = examplesHook
+    binsPrepSeedInfo.aptPkgsList  = aptPkgsList
+    binsPrepSeedInfo.pipPkgsList  = pipPkgsList
+    binsPrepSeedInfo.pipxPkgsList  = pipxPkgsList
+    binsPrepSeedInfo.examplesHook  = examplesHook
 
 
 ####+BEGIN: b:py3:cs:framework/endOfFile :basedOn "classification"

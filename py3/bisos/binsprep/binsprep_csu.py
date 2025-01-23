@@ -83,7 +83,7 @@ import collections
 
 # import os
 # import sys
-from bisos.binsprep import binsprep
+from bisos.binsprep import binsprepSeed
 
 ####+BEGIN: b:py3:cs:orgItem/section :title "CSU-Lib Examples" :comment "-- Providing examples_csu"
 """ #+begin_org
@@ -108,9 +108,9 @@ def examples_csu(
     cmnd = cs.examples.cmndEnter
     literal = cs.examples.execInsert
 
-    aptPkgsNames = binsprep.binsPrepPkgsSingleton.aptPkgsNames()
-    pipPkgsNames = binsprep.binsPrepPkgsSingleton.pipPkgsNames()
-    pipxPkgsNames = binsprep.binsPrepPkgsSingleton.pipxPkgsNames()
+    aptPkgsNames = binsprepSeed.binsPrepSeedInfo.aptPkgsNames()
+    pipPkgsNames = binsprepSeed.binsPrepSeedInfo.pipPkgsNames()
+    pipxPkgsNames = binsprepSeed.binsPrepSeedInfo.pipxPkgsNames()
 
     if len(aptPkgsNames) != 0:
         cs.examples.menuChapter(f'=APT BinsPrep Packages {aptPkgsNames}=')
@@ -149,8 +149,8 @@ def examples_csu(
 
     # literal("hostname --fqdn", comment=" # usually used as control/me")
 
-    if binsprep.binsPrepPkgsSingleton.examplesHook is not None:
-        binsprep.binsPrepPkgsSingleton.examplesHook()
+    if binsprepSeed.binsPrepSeedInfo.examplesHook is not None:
+        binsprepSeed.binsPrepSeedInfo.examplesHook()
 
 ####+BEGIN: blee:bxPanel:foldingSection :outLevel 0 :sep nil :title "CmndSvcs" :anchor ""  :extraInfo "Command Services Section"
 """ #+begin_org
@@ -233,13 +233,13 @@ class aptPkgs_list(cs.Cmnd):
 ** [[elisp:(org-cycle)][| *CmndDesc:* | ]]  A starting point command.
         #+end_org """): return(cmndOutcome)
 
-        if binsprep.binsPrepPkgsSingleton.aptPkgsList is not None:
-            for eachPkg in binsprep.binsPrepPkgsSingleton.aptPkgsList:
+        if binsprepSeed.binsPrepSeedInfo.aptPkgsList is not None:
+            for eachPkg in binsprepSeed.binsPrepSeedInfo.aptPkgsList:
                 print(f"pkgName = {eachPkg.name}")
         else:
             print("Empty Pkgs List")
 
-        return cmndOutcome.set(opResults=binsprep.binsPrepPkgsSingleton.aptPkgsNames())
+        return cmndOutcome.set(opResults=binsprepSeed.binsPrepSeedInfo.aptPkgsNames())
 
 
 ####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "aptPkg_isInstalled" :comment "" :extent "verify" :ro "cli" :parsMand "" :parsOpt "" :argsMin 1 :argsMax 1 :pyInv ""
@@ -346,7 +346,7 @@ class aptPkgs_update(cs.Cmnd):
         cmndArgs = self.cmndArgsGet("0&9999", cmndArgsSpecDict, argsList)
 
         if cmndArgs[0] == "all":
-            cmndArgs = binsprep.binsPrepPkgsSingleton.aptPkgsNames()
+            cmndArgs = binsprepSeed.binsPrepSeedInfo.aptPkgsNames()
             if len(cmndArgs) == 0:
                 cmndOutcome.report("No AptPkgs -- Installation skipped")
 
@@ -356,7 +356,7 @@ class aptPkgs_update(cs.Cmnd):
                 continue
             else:
                 # <2024-11-18 Mon 14:05>  MB -- Notyet, below commented out not working
-                aptPkg  = binsprep.binsPrepPkgsSingleton.namedAptPkg(each)
+                aptPkg  = binsprepSeed.binsPrepSeedInfo.namedAptPkg(each)
                 if aptPkg is None:
                     b_io.eh.problem_usageError(f"{each}")
                     continue
@@ -422,14 +422,14 @@ class pipPkgs_list(cs.Cmnd):
 ** [[elisp:(org-cycle)][| *CmndDesc:* | ]]  A starting point command.
         #+end_org """): return(cmndOutcome)
 
-        if binsprep.binsPrepPkgsSingleton.pipPkgsList is not None:
-            for eachPkg in binsprep.binsPrepPkgsSingleton.pipPkgsList:
+        if binsprepSeed.binsPrepSeedInfo.pipPkgsList is not None:
+            for eachPkg in binsprepSeed.binsPrepSeedInfo.pipPkgsList:
                 pass
                 # print(f"pkgName = {eachPkg.name}")
         else:
             print("Empty Pkgs List")
 
-        return cmndOutcome.set(opResults=binsprep.binsPrepPkgsSingleton.pipPkgsNames())
+        return cmndOutcome.set(opResults=binsprepSeed.binsPrepSeedInfo.pipPkgsNames())
 
 
 ####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "pipPkg_isInstalled" :comment "" :extent "verify" :ro "cli" :parsMand "" :parsOpt "" :argsMin 1 :argsMax 1 :pyInv ""
@@ -530,14 +530,14 @@ class pipPkgs_update(cs.Cmnd):
         cmndArgs = self.cmndArgsGet("0&9999", cmndArgsSpecDict, argsList)
 
         if cmndArgs[0] == "all":
-            cmndArgs = binsprep.binsPrepPkgsSingleton.pipPkgsNames()
+            cmndArgs = binsprepSeed.binsPrepSeedInfo.pipPkgsNames()
 
         for each in cmndArgs:
             if pipPkg_isInstalled().pyCmnd(cmndOutcome=cmndOutcome, argsList=[f"{each}"]).results:
                 print(f"{each} PIP Package is already installed -- skipped")
                 continue
             else:
-                pipPkg  = binsprep.binsPrepPkgsSingleton.namedPipPkg(each)
+                pipPkg  = binsprepSeed.binsPrepSeedInfo.namedPipPkg(each)
                 if pipPkg is None:
                     b_io.eh.problem_usageError(f"{each}")
                     continue
@@ -599,14 +599,14 @@ class pipxPkgs_list(cs.Cmnd):
 ** [[elisp:(org-cycle)][| *CmndDesc:* | ]]  A starting point command.
         #+end_org """): return(cmndOutcome)
 
-        if binsprep.binsPrepPkgsSingleton.pipxPkgsList is not None:
-            for eachPkg in binsprep.binsPrepPkgsSingleton.pipxPkgsList:
+        if binsprepSeed.binsPrepSeedInfo.pipxPkgsList is not None:
+            for eachPkg in binsprepSeed.binsPrepSeedInfo.pipxPkgsList:
                 pass
                 # print(f"pkgName = {eachPkg.name}")
         else:
             print("Empty Pkgs List")
 
-        return cmndOutcome.set(opResults=binsprep.binsPrepPkgsSingleton.pipxPkgsNames())
+        return cmndOutcome.set(opResults=binsprepSeed.binsPrepSeedInfo.pipxPkgsNames())
 
 
 ####+BEGIN: b:py3:cs:cmnd/classHead :cmndName "pipxPkg_isInstalled" :comment "" :extent "verify" :ro "cli" :parsMand "" :parsOpt "" :argsMin 1 :argsMax 1 :pyInv ""
@@ -707,14 +707,14 @@ class pipxPkgs_update(cs.Cmnd):
         cmndArgs = self.cmndArgsGet("0&9999", cmndArgsSpecDict, argsList)
 
         if cmndArgs[0] == "all":
-            cmndArgs = binsprep.binsPrepPkgsSingleton.pipxPkgsNames()
+            cmndArgs = binsprepSeed.binsPrepSeedInfo.pipxPkgsNames()
 
         for each in cmndArgs:
             if pipxPkg_isInstalled().pyCmnd(cmndOutcome=cmndOutcome, argsList=[f"{each}"]).results:
                 print(f"{each} PIPX Package is already installed -- skipped")
                 continue
             else:
-                pipPkg  = binsprep.binsPrepPkgsSingleton.namedPipxPkg(each)
+                pipPkg  = binsprepSeed.binsPrepSeedInfo.namedPipxPkg(each)
                 if pipPkg is None:
                     b_io.eh.problem_usageError(f"OOPS -- {each}")
                     continue
